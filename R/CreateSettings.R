@@ -143,3 +143,65 @@ createRcsSettings <- function(
 
   return(analysis)
 }
+
+
+
+
+#' Create Locfit settings
+#'
+#' @description
+#' Create the settings for fitting a local likelihood approach for smooth
+#' risk-based prediction of absolute benefit.
+#'
+#' @param weights       Prior weights for observations (reciprocal of variance,
+#'                      or sample size).
+#' @param kern          Weight function, default = "tcub". Other choices are
+#'                      "rect", "trwt", "tria", "epan", "bisq" and "gauss".
+#'                      Choices may be restricted when derivatives are required;
+#'                      e.g. for confidence bands and some bandwidth selectors.
+#' @param kt            Kernel type, "sph" (default); "prod". In multivariate
+#'                      problems, "prod" uses a simplified product model which
+#'                      speeds up computations.
+#' @param family        Local likelihood family; "gaussian"; "binomial";
+#'                      "poisson"; "gamma" and "geom". Density and rate
+#'                      estimation families are "dens", "rate" and "hazard"
+#'                      (hazard rate). If the family is preceded by a 'q' (for
+#'                      example, family="qbinomial"), quasi-likelihood variance
+#'                      estimates are used. Otherwise, the residual variance (rv)
+#'                      is fixed at 1. The default family is "qgauss" if a
+#'                      response y is provided; "density" if no response is
+#'                      provided.
+#' @param link          Link function for local likelihood fitting. Depending on
+#'                      the family, choices may be "ident", "log", "logit",
+#'                      "inverse", "sqrt" and "arcsin".
+#' @param maxk          Controls space assignment for evaluation structures. For
+#'                      the adaptive evaluation structures, it is impossible to
+#'                      be sure in advance how many vertices will be generated.
+#'                      If you get warnings about ‘Insufficient vertex space’,
+#'                      Locfit's default assigment can be increased by increasing
+#'                      maxk. The default is maxk=100.
+#' @param mint          Points for numerical integration rules. Default 20.
+#' @param maxit         Maximum iterations for local likelihood estimation.
+#'                      Default 20.
+#' @param debug         If > 0; prints out some debugging information
+#'
+#' @export
+
+createLocfitSettings <- function(
+  kern    = "tricube",
+  kt      = "sph",
+  family  = "binomial",
+  link    = "default",
+  maxk    = 100,
+  mint    = 20,
+  maxit   = 20,
+  debug   = 0
+) {
+  analysis <- list()
+  for (name in names(formals(createLocfitSettings))) {
+    analysis[[name]] <- get(name)
+  }
+  class(analysis) <- "args"
+
+  return(analysis)
+}
