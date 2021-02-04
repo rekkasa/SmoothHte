@@ -55,24 +55,21 @@ fitRcsHte <- function(
   data,
   settings
 ) {
-  if (is.null(data$propensityLinearPredictor)) {
-    # nKnots <- settings$nKnots
-    smoothFit <- rms::lrm(
-      formula           = outcome ~ rms::rcs(riskLinearPredictor, 5),
-      data              = data,
-      method            = settings$method,
-      model             = settings$model,
-      x                 = settings$x,
-      y                 = settings$y,
-      linear.predictors = settings$linear.predictors,
-      se.fit            = settings$se.fit,
-      penalty           = settings$penalty,
-      tol               = settings$tol,
-      strata.penalty    = settings$strata.penalty,
-      var.penalty       = settings$var.penalty,
-      scale             = settings$scale
-    )
-  }
+  smoothFit <- rms::lrm(
+    formula           = outcome ~ rms::rcs(riskLinearPredictor, 5),
+    data              = data,
+    method            = settings$method,
+    model             = settings$model,
+    x                 = settings$x,
+    y                 = settings$y,
+    linear.predictors = settings$linear.predictors,
+    se.fit            = settings$se.fit,
+    penalty           = settings$penalty,
+    tol               = settings$tol,
+    strata.penalty    = settings$strata.penalty,
+    var.penalty       = settings$var.penalty,
+    scale             = settings$scale
+  )
   attr(smoothFit, "smoothClass") <- "rcs"
 
   return(smoothFit)
@@ -120,9 +117,9 @@ fitLocfitHte <- function(
 
 #' @export
 #' @importFrom dplyr %>%
-fitStrataHte <- function(
+fitStratifiedHte <- function(
   data,
-  nStrata
+  settings
 ) {
   ret <- data %>%
   dplyr::mutate(riskStratum = dplyr::ntile(riskLinearPredictor, 4))
@@ -131,7 +128,7 @@ fitStrataHte <- function(
     dplyr::group_by(riskStratum, treatment) %>%
     dplyr::summarise(
       x = sum(outcome),
-      n = n(),
+      n = dplyr::n(),
       m = mean(outcome)
     ) %>%
     dplyr::group_by(riskStratum) %>%
@@ -228,4 +225,23 @@ predictBenefit <- function(
 
   predictSmooth(smoothControl, p) - predictSmooth(smoothTreatment, p)
 
+}
+
+
+#' @export
+predictStratifiedBenefit <- function(
+  p,
+  stratifiedHte
+) {
+
+  customRank <- function(x, quantiles) {
+    v <- c(x, quantiles)
+    return(rank(v)[1] - 1)
+  }
+
+  quantiles <- plogis(stratifiedHte$quantiles)
+  k = sapply(p, customRank, quantiles = quantiles)
+  res <- unlist(stratifiedHte$data$estimate[k])
+
+  return(res)
 }

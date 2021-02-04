@@ -4,12 +4,12 @@
 \alias{predictSmooth}
 \title{Predict with smooth fit}
 \usage{
-predictSmooth(smoothFit, x)
+predictSmooth(smoothFit, p)
 }
 \arguments{
 \item{smoothFit}{An estimated smooth fit}
 
-\item{x}{The new data on which the prediction is made}
+\item{p}{The new data on which the prediction is made}
 }
 \description{
 Predict individualized benefit for new data based on a smooth fit.

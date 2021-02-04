@@ -205,3 +205,17 @@ createLocfitSettings <- function(
 
   return(analysis)
 }
+
+
+#' @export
+createStratifiedSettings <- function(
+  nStrata = 4
+) {
+  analysis <- list()
+  for (name in names(formals(createStratifiedSettings))) {
+    analysis[[name]] <- get(name)
+  }
+  class(analysis) <- "args"
+
+  return(analysis)
+}
