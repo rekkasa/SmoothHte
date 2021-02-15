@@ -219,3 +219,37 @@ createStratifiedSettings <- function(
 
   return(analysis)
 }
+
+
+#' Create model based settings
+#' @description
+#' Create the settings for a model-based approach to HTE. Either a
+#' covariate-adjusted constant treatment effect model or a model with the baseline
+#' risk linear predictor can be considered.
+#'
+#' @param adjustmentCovariates    The covariates to be used for adjustment, if a
+#'                                constant relative treatment effect is assumed
+#' @param model                   The model-type assumed. Currently, only
+#'                                "logistic" is available
+#' @param type                    Can be either "risk" or "treatment". If "risk"
+#'                                a column called "riskLinearPredictor" is
+#'                                required in the data. If "treatment" a column
+#'                                "treatment" is required in the data.
+#'
+#' @export
+
+createModelBasedSettings <- function(
+  adjustmentCovariates = NULL,
+  model = "logistic",
+  type = "risk"
+) {
+
+  analysis <- list()
+  for (name in names(formals(createModelBasedSettings))) {
+    analysis[[name]] <- get(name)
+  }
+  class(analysis) <- "args"
+
+  return(analysis)
+
+}

@@ -245,3 +245,81 @@ predictStratifiedBenefit <- function(
 
   return(res)
 }
+
+
+#' @export
+fitModelBasedHte <- function(
+  data,
+  settings
+) {
+
+  settings$args$data <- data
+
+  if (settings$type == "treatment") {
+    if (!is.null(settings$adjustmentCovariates)) {
+      covariates <- c(settings$adjustmentCovariates, "treatment")
+      modelFormula <- paste(covariates, collapse = "+")
+    }
+  } else if (settings$type == "risk") {
+    modelFormula <- paste(
+      c(
+        "treatment",
+        "riskLinearPredictor",
+        "riskLinearPredictor*treatment"
+      ),
+      collapse = "+"
+    )
+  }
+
+  if (settings$model == "logistic") {
+    settings$fun <- "glm"
+    settings$args$family = "binomial"
+  }
+
+
+  settings$args$formula <- paste("outcome", modelFormula, sep = "~")
+  fit <- do.call(
+    eval(parse(text = settings$fun)),
+    settings$args
+  )
+
+  attr(fit, "smoothClass") <- "modelBased"
+  attr(fit, "type") <- settings$type
+  return(fit)
+
+}
+
+
+
+
+#' @export
+predictBenefitModelBasedHte <- function(
+  p,
+  modelBasedFit
+) {
+
+  type <- attr(modelBasedFit, "type")
+
+  lp <- log(p / (1 - p))   # Risk linear predictor
+  if (type == "treatment") {
+    treatmentEffect <- coefficients(modelBasedFit)["treatment"]
+    benefit <- plogis(lp) - plogis(lp + treatmentEffect)
+  } else {
+    p0 <- plogis(
+      predict(
+        modelBasedFit,
+        newdata = data.frame(treatment = 0, riskLinearPredictor = lp)
+      )
+    )
+    p1 <- plogis(
+      predict(
+        modelBasedFit,
+        newdata = data.frame(treatment = 1, riskLinearPredictor = lp)
+      )
+    )
+    benefit <- p0 - p1
+  }
+
+  return(benefit)
+
+}
