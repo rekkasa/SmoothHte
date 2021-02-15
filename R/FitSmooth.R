@@ -213,7 +213,7 @@ predictSmooth <- function(
 
 
 #' @export
-predictBenefit <- function(
+predictSmoothBenefit <- function(
   p,
   smoothControl,
   smoothTreatment
