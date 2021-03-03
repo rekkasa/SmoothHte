@@ -6,7 +6,7 @@ Authors@R:
            family = "Rekkas",
            role = c("aut", "cre"),
            email = "a.rekkas@erasmusmc.nl",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           comment = c(ORCID = "0000-0002-5352-943X"))
 Description: [Under Development] An R-package designed for fitting smooth
              estimates of absolute treatment benefit.
 License: GPL (>= 3)
@@ -14,3 +14,8 @@ Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
+Imports:
+  locfit,
+  PropCIs,
+  dplyr,
+  rms
