@@ -4,7 +4,7 @@
 # library(rms)
 #
 # databaseSettings <- createDatabaseSettings(
-#   numberOfObservations = 1e5,
+#   numberOfObservations = 1e3,
 #   numberOfCovariates = 4,
 #   covariateDistributionSettings = list(
 #     createNormalDistributionSettings(),

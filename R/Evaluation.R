@@ -13,40 +13,68 @@ calculateCForBenefit <- function(
   method = "rank"
 ) {
 
-  if (method == "rank") {
+  pairs <- createPairs(
+    data   = data,
+    method = method
+  )
 
-    numberOfPairs <- min(sum(data$treatment), sum(!data$treatment))
+  res <- AUC.trinary(
+    xb.hat = pairs$pairPrediction,
+    y      = pairs$pairOutcome
+  )
 
-    grouped <- data %>%
-      dplyr::group_by(treatment) %>%
-      tidyr::nest() %>%
-      dplyr::mutate(
-        rankOutcomes = purrr::map(
-          .x = data,
-          .f = ~tibble(
-            outcome          = .x$outcome,
-            predictedBenefit = .x$predictedBenefit,
-            rank             = rank(.x$predictedBenefit)
-          ) %>%
-            arrange(rank) %>%
-            slice(1:numberOfPairs)
-        )
-      ) %>%
-      tidyr::unnest(rankOutcomes) %>%
-      dplyr::select(-data) %>%
-      dplyr::ungroup()
-
-    pairOutcomes <- grouped %>% filter(treatment == 0) %>% pull(outcome) -
-      grouped %>% filter(treatment == 1) %>% pull(outcome)
-    pairPrediction <- grouped %>% filter(treatment == 0) %>% pull(predictedBenefit) / 2 +
-      grouped %>% filter(treatment == 1) %>% pull(predictedBenefit) / 2
-
-    res <- AUC.trinary(
-      xb.hat = pairPrediction,
-      y      = pairOutcomes
-    )
-  }
   return(res$AUC)
 }
 
 
+
+
+#' Calculate the calibration for benefit
+#'
+#' @author
+#'   Carolien Maas
+#'
+#' @description
+#'   Calculates the ICI, E50 and E90 for benefit, using matched
+#'   patient pairs
+#'
+#' @param data      A dataframe with columns `treatment`, `outcome` and
+#'                  `predictedBenefit`
+#' @param method    The method for matching. Currently, only `rank` is supported
+#'
+#' @export
+
+calculateCalibrationForBenefit <- function(
+  data,
+  method = "rank"
+) {
+
+  pairs <- createPairs(
+    data   = data,
+    method = method
+  )
+
+  loessCalibrate <- limma::loessFit(
+    y = pairs$pairOutcome,
+    x = pairs$pairPrediction
+  )
+
+  # loessResult <- predict(
+  #   loessCalibrate,
+  #   newdata = pairs$pairPrediction,
+  #   se      = TRUE
+  # )
+
+
+  tauSmoothed <- loessCalibrate$fitted
+
+  res <- list(
+    ici = mean(abs(tauSmoothed - pairs$pairPrediction))/mean(pairs$pairPrediction),
+    e50 = median(abs(tauSmoothed - pairs$pairPrediction))/mean(pairs$pairPrediction),
+    e90 = as.numeric(quantile(abs(tauSmoothed - pairs$pairPrediction), probs = .9)) /
+      mean(pairs$pairPrediction)
+  )
+
+  return(res)
+
+}

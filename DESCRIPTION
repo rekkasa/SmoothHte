@@ -1,12 +1,20 @@
 Package: SmoothHte
-Title: What the Package Does (One Line, Title Case)
+Title: Fit smooth risk-based absolute benefit predictions
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "Alexandros",
-           family = "Rekkas",
-           role = c("aut", "cre"),
-           email = "a.rekkas@erasmusmc.nl",
-           comment = c(ORCID = "0000-0002-5352-943X"))
+    c(
+      person(given = "Alexandros",
+             family = "Rekkas",
+             role = c("aut", "cre"),
+             email = "a.rekkas@erasmusmc.nl",
+             comment = c(ORCID = "0000-0002-5352-943X")),
+      person(given = "David",
+             family = "van Klaveren",
+             role = "aut"),
+      person(given = "Carolien",
+             family = "Maas",
+             role = "aut")
+      )
 Description: [Under Development] An R-package designed for fitting smooth
              estimates of absolute treatment benefit.
 License: GPL (>= 3)
@@ -19,3 +27,5 @@ Imports:
   PropCIs,
   dplyr,
   rms
+biocViews:
+  limma
