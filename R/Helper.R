@@ -10,12 +10,12 @@
 
 AUC <- function(xb.hat,y){
   max.y <- max(y)
-  n <- length(xb.hat)
-  n1 <- sum(y == max.y)
+  n <- as.numeric(length(xb.hat))
+  n1 <- as.numeric(sum(y == max.y))
   mean.rank <- mean(rank(xb.hat)[y == max.y])
   AUC <- (mean.rank - (n1 + 1) / 2) / (n - n1)
-  comparable <- n1 * (n - n1) * 2
-  concordant <- AUC * comparable
+  comparable <- as.numeric(n1 * (n - n1) * 2)
+  concordant <- AUC * n1
   return(
     list(
       AUC        = AUC,
@@ -24,7 +24,6 @@ AUC <- function(xb.hat,y){
     )
   )
 }
-
 
 
 #' Calculate AUC
