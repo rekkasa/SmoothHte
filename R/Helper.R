@@ -15,7 +15,7 @@ AUC <- function(xb.hat,y){
   mean.rank <- mean(rank(xb.hat)[y == max.y])
   AUC <- (mean.rank - (n1 + 1) / 2) / (n - n1)
   comparable <- as.numeric(n1 * (n - n1) * 2)
-  concordant <- AUC * n1
+  concordant <- AUC * comparable
   return(
     list(
       AUC        = AUC,
