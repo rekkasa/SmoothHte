@@ -56,7 +56,7 @@ fitRcsHte <- function(
   settings
 ) {
   smoothFit <- rms::lrm(
-    formula           = outcome ~ rms::rcs(riskLinearPredictor, 5),
+    formula           = outcome ~ rms::rcs(riskLinearPredictor, 3),
     data              = data,
     method            = settings$method,
     model             = settings$model,
