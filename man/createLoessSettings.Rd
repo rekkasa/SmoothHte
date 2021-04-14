@@ -14,7 +14,7 @@ createLoessSettings(
   normalize = TRUE,
   family = "gaussian",
   method = "loess",
-  control = loess.control()
+  control = stats::loess.control()
 )
 }
 \arguments{

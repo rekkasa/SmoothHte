@@ -4,7 +4,6 @@
 #' discrimination
 #'
 #' @param data        A dataframe with columns ...
-#' @param smoothFit   A smooth model for predicting absolute benefit
 #' @param method      Can be "rank" ....
 #' @export
 
@@ -54,7 +53,7 @@ calculateCalibrationForBenefit <- function(
     method = method
   )
 
-  loessCalibrate <- loess(
+  loessCalibrate <- stats::loess(
     pairOutcome ~ pairPrediction,
     data = pairs,
     statistics = "none"
@@ -64,8 +63,8 @@ calculateCalibrationForBenefit <- function(
 
   res <- list(
     ici = mean(abs(tauSmoothed - pairs$pairPrediction)),
-    e50 = median(abs(tauSmoothed - pairs$pairPrediction)),
-    e90 = as.numeric(quantile(abs(tauSmoothed - pairs$pairPrediction), probs = .9))
+    e50 = stats::median(abs(tauSmoothed - pairs$pairPrediction)),
+    e90 = as.numeric(stats::quantile(abs(tauSmoothed - pairs$pairPrediction), probs = .9))
   )
 
   return(res)

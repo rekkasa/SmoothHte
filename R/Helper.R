@@ -83,18 +83,18 @@ createPairs <- function(
             predictedBenefit = .x$predictedBenefit,
             rank             = rank(.x$predictedBenefit)
           ) %>%
-            arrange(rank) %>%
-            slice(1:numberOfPairs)
+            dplyr::arrange(rank) %>%
+            dplyr::slice(1:numberOfPairs)
         )
       ) %>%
       tidyr::unnest(rankOutcomes) %>%
       dplyr::select(-data) %>%
       dplyr::ungroup()
 
-    pairOutcome <- grouped %>% filter(treatment == 0) %>% pull(outcome) -
-      grouped %>% filter(treatment == 1) %>% pull(outcome)
-    pairPrediction <- grouped %>% filter(treatment == 0) %>% pull(predictedBenefit) / 2 +
-      grouped %>% filter(treatment == 1) %>% pull(predictedBenefit) / 2
+    pairOutcome <- grouped %>% dplyr::filter(treatment == 0) %>% dplyr::pull(outcome) -
+      grouped %>% dplyr::filter(treatment == 1) %>% dplyr::pull(outcome)
+    pairPrediction <- grouped %>% dplyr::filter(treatment == 0) %>% dplyr::pull(predictedBenefit) / 2 +
+      grouped %>% dplyr::filter(treatment == 1) %>% dplyr::pull(predictedBenefit) / 2
 
   }
 
