@@ -28,4 +28,5 @@ Imports:
   PropCIs,
   dplyr,
   rms,
-  limma
+  purrr,
+  tidyr

@@ -54,19 +54,18 @@ calculateCalibrationForBenefit <- function(
     method = method
   )
 
-  loessCalibrate <- limma::loessFit(
-    y = pairs$pairOutcome,
-    x = pairs$pairPrediction,
-    method = "loess"
+  loessCalibrate <- loess(
+    pairOutcome ~ pairPrediction,
+    data = pairs,
+    statistics = "none"
   )
 
   tauSmoothed <- loessCalibrate$fitted
 
   res <- list(
     ici = mean(abs(tauSmoothed - pairs$pairPrediction)),
-    e50 = median(abs(tauSmoothed - pairs$pairPrediction))/mean(pairs$pairPrediction),
-    e90 = as.numeric(quantile(abs(tauSmoothed - pairs$pairPrediction), probs = .9)) /
-      mean(pairs$pairPrediction)
+    e50 = median(abs(tauSmoothed - pairs$pairPrediction)),
+    e90 = as.numeric(quantile(abs(tauSmoothed - pairs$pairPrediction), probs = .9))
   )
 
   return(res)
