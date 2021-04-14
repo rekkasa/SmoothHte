@@ -27,5 +27,4 @@ Imports:
   locfit,
   PropCIs,
   dplyr,
-  rms,
-  limma
+  rms

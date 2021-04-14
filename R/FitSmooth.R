@@ -55,21 +55,55 @@ fitRcsHte <- function(
   data,
   settings
 ) {
-  smoothFit <- rms::lrm(
-    formula           = outcome ~ rms::rcs(riskLinearPredictor, 3),
-    data              = data,
-    method            = settings$method,
-    model             = settings$model,
-    x                 = settings$x,
-    y                 = settings$y,
-    linear.predictors = settings$linear.predictors,
-    se.fit            = settings$se.fit,
-    penalty           = settings$penalty,
-    tol               = settings$tol,
-    strata.penalty    = settings$strata.penalty,
-    var.penalty       = settings$var.penalty,
-    scale             = settings$scale
-  )
+  if (settings$nKnots == 3) {
+    smoothFit <- rms::lrm(
+      formula           = outcome ~ rms::rcs(riskLinearPredictor, 3),
+      data              = data,
+      method            = settings$method,
+      model             = settings$model,
+      x                 = settings$x,
+      y                 = settings$y,
+      linear.predictors = settings$linear.predictors,
+      se.fit            = settings$se.fit,
+      penalty           = settings$penalty,
+      tol               = settings$tol,
+      strata.penalty    = settings$strata.penalty,
+      var.penalty       = settings$var.penalty,
+      scale             = settings$scale
+    )
+  } else if (settings$nKnots == 4) {
+    smoothFit <- rms::lrm(
+      formula           = outcome ~ rms::rcs(riskLinearPredictor, 4),
+      data              = data,
+      method            = settings$method,
+      model             = settings$model,
+      x                 = settings$x,
+      y                 = settings$y,
+      linear.predictors = settings$linear.predictors,
+      se.fit            = settings$se.fit,
+      penalty           = settings$penalty,
+      tol               = settings$tol,
+      strata.penalty    = settings$strata.penalty,
+      var.penalty       = settings$var.penalty,
+      scale             = settings$scale
+    )
+  } else if (settings$nKnots == 5) {
+    smoothFit <- rms::lrm(
+      formula           = outcome ~ rms::rcs(riskLinearPredictor, 5),
+      data              = data,
+      method            = settings$method,
+      model             = settings$model,
+      x                 = settings$x,
+      y                 = settings$y,
+      linear.predictors = settings$linear.predictors,
+      se.fit            = settings$se.fit,
+      penalty           = settings$penalty,
+      tol               = settings$tol,
+      strata.penalty    = settings$strata.penalty,
+      var.penalty       = settings$var.penalty,
+      scale             = settings$scale
+    )
+  }
   attr(smoothFit, "smoothClass") <- "rcs"
 
   return(smoothFit)

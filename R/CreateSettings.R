@@ -122,7 +122,7 @@ createLoessSettings <- function(
 #' @export
 
 createRcsSettings <- function(
-  nKnots            = 5,
+  nKnots            = 3,
   method            = "lrm.fit",
   model             = FALSE,
   x                 = FALSE,
