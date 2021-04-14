@@ -27,4 +27,6 @@ Imports:
   locfit,
   PropCIs,
   dplyr,
-  rms
+  rms,
+  purrr,
+  tidyr
