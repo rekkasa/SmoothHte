@@ -14,7 +14,7 @@ fitLoessHte <- function(
   data,
   settings
 ) {
-  smoothFit <- loess(
+  smoothFit <- stats::loess(
     formula     = outcome ~ riskLinearPredictor,
     data        = data,
     weighths    = settings$weights,
@@ -149,6 +149,13 @@ fitLocfitHte <- function(
 
 
 
+#' Fit risk-stratified heterogeneity of treatment effect
+#' @description
+#' Fits a risk-stratified approach for assessing treatment effect heterogeneity
+#' @param data        A dataframe containing at least a column named
+#'                    "riskLinearPredictor" and column named "outcome".
+#'                    Currently, only binary outcomes are supported.
+#' @param settings    A list of settings generated from [createStratifiedSettings()]
 #' @export
 #' @importFrom dplyr %>%
 fitStratifiedHte <- function(
@@ -191,13 +198,13 @@ fitStratifiedHte <- function(
   meanRisk <- ret %>%
     dplyr::group_by(riskStratum) %>%
     dplyr::summarise(
-      meanRisk = mean(plogis(riskLinearPredictor))
+      meanRisk = mean(stats::plogis(riskLinearPredictor))
     )
 
   ret <- rseeData %>%
     dplyr::left_join(meanRisk)
 
-  quants <- quantile(
+  quants <- stats::quantile(
     data$riskLinearPredictor,
     c(0, .25, .5, .75, 1)
   )
@@ -231,7 +238,7 @@ predictSmooth <- function(
 ) {
   x <- log(p / (1 - p))
 
-  ret <- predict(
+  ret <- stats::predict(
     smoothFit,
     newdata = data.frame(
       riskLinearPredictor = x
@@ -246,6 +253,12 @@ predictSmooth <- function(
 }
 
 
+#' Predict smooth benefit
+#' @description
+#' Predicts the absolute benefit based on two smooth fits
+#' @param p                 The new data on which the prediction is made
+#' @param smoothControl     The smooth fit in the control arm
+#' @param smoothTreatment   The smooth fit in the treatment arm
 #' @export
 predictSmoothBenefit <- function(
   p,
@@ -262,6 +275,12 @@ predictSmoothBenefit <- function(
 }
 
 
+#' Predict risk-stratified benefits
+#' @description
+#' Predicts absolute benefit using the risk-stratified approach to treatment
+#' effect heterogeneity
+#' @param p                  The new data on which the prediction is made
+#' @param stratifiedHte      The estimated risk-stratified fit. See [fitStratifiedHte()]
 #' @export
 predictStratifiedBenefit <- function(
   p,
@@ -273,7 +292,7 @@ predictStratifiedBenefit <- function(
     return(rank(v)[1] - 1)
   }
 
-  quantiles <- plogis(stratifiedHte$quantiles)
+  quantiles <- stats::plogis(stratifiedHte$quantiles)
   k = sapply(p, customRank, quantiles = quantiles)
   res <- unlist(stratifiedHte$data$estimate[k])
 
@@ -281,6 +300,13 @@ predictStratifiedBenefit <- function(
 }
 
 
+#' Fit model-based heterogeneity of treatment effect
+#' @description
+#' Fits a model-based approach to treatment effect heterogeneity
+#' @param data        A dataframe containing at least a column named
+#'                    "riskLinearPredictor" and column named "outcome".
+#'                    Currently, only binary outcomes are supported.
+#' @param settings    A list of settings generated from [createModelBasedSettings()]
 #' @export
 fitModelBasedHte <- function(
   data,
@@ -325,7 +351,12 @@ fitModelBasedHte <- function(
 
 
 
-
+#' Predict model-based treatment effects
+#' @description
+#' Predicts absolute benefit using the model-based approach to treatment effect
+#' heterogeneity
+#' @param p                   The new data on which the prediction is made
+#' @param modelBasedFit       The estimated model-based fit. See [fitModelBasedHte()]
 #' @export
 predictBenefitModelBasedHte <- function(
   p,
@@ -336,17 +367,17 @@ predictBenefitModelBasedHte <- function(
 
   lp <- log(p / (1 - p))   # Risk linear predictor
   if (type == "treatment") {
-    treatmentEffect <- coefficients(modelBasedFit)["treatment"]
-    benefit <- plogis(lp) - plogis(lp + treatmentEffect)
+    treatmentEffect <- stats::coefficients(modelBasedFit)["treatment"]
+    benefit <- stats::plogis(lp) - stats::plogis(lp + treatmentEffect)
   } else {
-    p0 <- plogis(
-      predict(
+    p0 <- stats::plogis(
+      stats::predict(
         modelBasedFit,
         newdata = data.frame(treatment = 0, riskLinearPredictor = lp)
       )
     )
-    p1 <- plogis(
-      predict(
+    p1 <- stats::plogis(
+      stats::predict(
         modelBasedFit,
         newdata = data.frame(treatment = 1, riskLinearPredictor = lp)
       )

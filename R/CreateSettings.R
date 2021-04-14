@@ -39,7 +39,7 @@ createLoessSettings <- function(
   normalize   = TRUE,
   family      = "gaussian",
   method      = "loess",
-  control     = loess.control()
+  control     = stats::loess.control()
 ) {
   analysis <- list()
   for (name in names(formals(createLoessSettings))) {
@@ -153,8 +153,6 @@ createRcsSettings <- function(
 #' Create the settings for fitting a local likelihood approach for smooth
 #' risk-based prediction of absolute benefit.
 #'
-#' @param weights       Prior weights for observations (reciprocal of variance,
-#'                      or sample size).
 #' @param kern          Weight function, default = "tcub". Other choices are
 #'                      "rect", "trwt", "tria", "epan", "bisq" and "gauss".
 #'                      Choices may be restricted when derivatives are required;
@@ -207,6 +205,12 @@ createLocfitSettings <- function(
 }
 
 
+#' Create stratified analysis settings
+#' @description
+#' Creates the settings for fitting a risk-stratified analysis
+#' @param nStrata    The number of strata in which the population will be
+#'                   divided. Currently, only equal-sized risk strata are
+#'                   supported.
 #' @export
 createStratifiedSettings <- function(
   nStrata = 4

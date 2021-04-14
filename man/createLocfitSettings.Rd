@@ -52,9 +52,6 @@ maxk. The default is maxk=100.}
 Default 20.}
 
 \item{debug}{If > 0; prints out some debugging information}
-
-\item{weights}{Prior weights for observations (reciprocal of variance,
-or sample size).}
 }
 \description{
 Create the settings for fitting a local likelihood approach for smooth

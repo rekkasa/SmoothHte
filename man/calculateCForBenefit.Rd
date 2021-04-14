@@ -10,8 +10,6 @@ calculateCForBenefit(data, method = "rank")
 \item{data}{A dataframe with columns ...}
 
 \item{method}{Can be "rank" ....}
-
-\item{smoothFit}{A smooth model for predicting absolute benefit}
 }
 \description{
 Calculates the C-statistic for benefit for the evaluation of
