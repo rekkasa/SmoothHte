@@ -4,7 +4,7 @@
 \alias{predictSmoothBenefit}
 \title{Predict smooth benefit}
 \usage{
-predictSmoothBenefit(p, smoothControl, smoothTreatment)
+predictSmoothBenefit(p, smoothFit)
 }
 \arguments{
 \item{p}{The new data on which the prediction is made}

@@ -14,19 +14,12 @@ fitLoessHte <- function(
   data,
   settings
 ) {
-  smoothFit <- stats::loess(
-    formula     = outcome ~ riskLinearPredictor,
-    data        = data,
-    weighths    = settings$weights,
-    model       = settings$model,
-    span        = settings$span,
-    degree      = settings$degree,
-    parametric  = settings$parametric,
-    drop.square = settings$drop.square,
-    normalize   = settings$normalize,
-    family      = settings$family,
-    method      = settings$method,
-    control     = settings$control
+
+  smoothFit <- gam::gam(
+    data    = data,
+    formula = outcome ~ treatment +
+      gam::lo(riskLinearPredictor, span = settings$span, degree = settings$degree) +
+      treatment * gam::lo(riskLinearPredictor, span = settings$span, degree = settings$degree)
   )
 
   attr(smoothFit, "smoothClass") <- "loess"
@@ -57,7 +50,9 @@ fitRcsHte <- function(
 ) {
   if (settings$nKnots == 3) {
     smoothFit <- rms::lrm(
-      formula           = outcome ~ rms::rcs(riskLinearPredictor, 3),
+      formula = outcome ~ treatment +
+        rms::rcs(riskLinearPredictor, 3) +
+        treatment * rms::rcs(riskLinearPredictor, 3),
       data              = data,
       method            = settings$method,
       model             = settings$model,
@@ -73,7 +68,9 @@ fitRcsHte <- function(
     )
   } else if (settings$nKnots == 4) {
     smoothFit <- rms::lrm(
-      formula           = outcome ~ rms::rcs(riskLinearPredictor, 4),
+      formula = outcome ~ treatment +
+        rms::rcs(riskLinearPredictor, 4) +
+        treatment * rms::rcs(riskLinearPredictor, 4),
       data              = data,
       method            = settings$method,
       model             = settings$model,
@@ -89,7 +86,9 @@ fitRcsHte <- function(
     )
   } else if (settings$nKnots == 5) {
     smoothFit <- rms::lrm(
-      formula           = outcome ~ rms::rcs(riskLinearPredictor, 5),
+      formula = outcome ~ treatment +
+        rms::rcs(riskLinearPredictor, 5) +
+        treatment * rms::rcs(riskLinearPredictor, 5),
       data              = data,
       method            = settings$method,
       model             = settings$model,
@@ -105,44 +104,6 @@ fitRcsHte <- function(
     )
   }
   attr(smoothFit, "smoothClass") <- "rcs"
-
-  return(smoothFit)
-}
-
-
-
-
-
-
-#' Fit Restricted Cubic Spline HTE
-#'
-#' @description
-#' Fit a local likelihood model for risk-based smoothing of absolute benefit
-#'
-#' @param data        A dataframe containing at least a column named
-#'                    "riskLinearPredictor" and column named "outcome".
-#'                    Currently, only binary outcomes are supported.
-#' @param settings    A list of settings generated from [createLocfitSettings()]
-#'
-#' @export
-
-fitLocfitHte <- function(
-  data,
-  settings
-) {
-  smoothFit <- locfit::locfit(
-    formula = outcome ~ locfit::lp(riskLinearPredictor),
-    data    = data,
-    kern    = settings$kern,
-    kt      = settings$kt,
-    family  = settings$family,
-    link    = settings$link,
-    maxk    = settings$maxk,
-    mint    = settings$mint,
-    maxit   = settings$maxit,
-    debug   = settings$debug
-  )
-  attr(smoothFit, "smoothClass") <- "locfit"
 
   return(smoothFit)
 }
@@ -262,16 +223,30 @@ predictSmooth <- function(
 #' @export
 predictSmoothBenefit <- function(
   p,
-  smoothControl,
-  smoothTreatment
+  smoothFit
 ) {
 
-  if (attr(smoothTreatment, "smoothClass") != attr(smoothControl, "smoothClass")) {
-    stop("Smooth fits not of the same smoothClass")
-  }
+  x <- log(p / (1 - p))
 
-  predictSmooth(smoothControl, p) - predictSmooth(smoothTreatment, p)
+  pred0 <- predict(
+    smoothFit,
+    newdata = data.frame(
+      treatment           = 0,
+      riskLinearPredictor = x
+    )
+  )
 
+  pred1 <- predict(
+    smoothFit,
+    newdata = data.frame(
+      treatment           = 1,
+      riskLinearPredictor = x
+    )
+  )
+
+  ret <- plogis(pred0) - plogis(pred1)
+
+  return(ret)
 }
 
 
@@ -386,5 +361,4 @@ predictBenefitModelBasedHte <- function(
   }
 
   return(benefit)
-
 }
