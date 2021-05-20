@@ -4,16 +4,9 @@
 \alias{createModelBasedSettings}
 \title{Create model based settings}
 \usage{
-createModelBasedSettings(
-  adjustmentCovariates = NULL,
-  model = "logistic",
-  type = "risk"
-)
+createModelBasedSettings(model = "logistic", type = "risk")
 }
 \arguments{
-\item{adjustmentCovariates}{The covariates to be used for adjustment, if a
-constant relative treatment effect is assumed}
-
 \item{model}{The model-type assumed. Currently, only
 "logistic" is available}
 

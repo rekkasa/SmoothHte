@@ -14,12 +14,19 @@ fitLoessHte <- function(
   data,
   settings
 ) {
-
-  smoothFit <- gam::gam(
-    data    = data,
-    formula = outcome ~ treatment +
-      gam::lo(riskLinearPredictor, span = settings$span, degree = settings$degree) +
-      treatment * gam::lo(riskLinearPredictor, span = settings$span, degree = settings$degree)
+  smoothFit <- stats::loess(
+    formula     = outcome ~ riskLinearPredictor,
+    data        = data,
+    weighths    = settings$weights,
+    model       = settings$model,
+    span        = settings$span,
+    degree      = settings$degree,
+    parametric  = settings$parametric,
+    drop.square = settings$drop.square,
+    normalize   = settings$normalize,
+    family      = settings$family,
+    method      = settings$method,
+    control     = settings$control
   )
 
   attr(smoothFit, "smoothClass") <- "loess"
@@ -29,6 +36,14 @@ fitLoessHte <- function(
 
 
 
+fitLocfitHte <- function(
+  data,
+  settings
+) {
+
+
+
+}
 
 
 
@@ -103,7 +118,46 @@ fitRcsHte <- function(
       scale             = settings$scale
     )
   }
+
+  aic <- 2*length(smoothFit$coefficients) + smoothFit$deviance
+  smoothFit$aic <- aic[2]
+
   attr(smoothFit, "smoothClass") <- "rcs"
+
+  return(smoothFit)
+}
+
+
+
+#' Fit Restricted Cubic Spline HTE
+#'
+#' @description
+#' Fit a local likelihood model for risk-based smoothing of absolute benefit
+#'
+#' @param data        A dataframe containing at least a column named
+#'                    "riskLinearPredictor" and column named "outcome".
+#'                    Currently, only binary outcomes are supported.
+#' @param settings    A list of settings generated from [createLocfitSettings()]
+#'
+#' @export
+
+fitLocfitHte <- function(
+  data,
+  settings
+) {
+  smoothFit <- locfit::locfit(
+    formula = outcome ~ locfit::lp(riskLinearPredictor, by = treatment),
+    data    = data,
+    kern    = settings$kern,
+    kt      = settings$kt,
+    family  = settings$family,
+    link    = settings$link,
+    maxk    = settings$maxk,
+    mint    = settings$mint,
+    maxit   = settings$maxit,
+    debug   = settings$debug
+  )
+  attr(smoothFit, "smoothClass") <- "locfit"
 
   return(smoothFit)
 }
@@ -183,37 +237,6 @@ fitStratifiedHte <- function(
 
 
 
-#' Predict with smooth fit
-#'
-#' @description
-#' Predict individualized benefit for new data based on a smooth fit.
-#'
-#' @param smoothFit       An estimated smooth fit
-#' @param p               The new data on which the prediction is made
-#'
-#' @export
-
-predictSmooth <- function(
-  smoothFit,
-  p
-) {
-  x <- log(p / (1 - p))
-
-  ret <- stats::predict(
-    smoothFit,
-    newdata = data.frame(
-      riskLinearPredictor = x
-    )
-  )
-
-  if (attr(smoothFit, "smoothClass") == "rcs") {
-    ret <- exp(ret) / (1 + exp(ret))
-  }
-
-  return(ret)
-}
-
-
 #' Predict smooth benefit
 #' @description
 #' Predicts the absolute benefit based on two smooth fits
@@ -244,7 +267,15 @@ predictSmoothBenefit <- function(
     )
   )
 
-  ret <- plogis(pred0) - plogis(pred1)
+  smoothClass <- attr(smoothFit, "smoothClass")
+  if (smoothClass == "loess" | smoothClass == "locfit") {
+    ret <- pred0 - pred1
+  } else {
+    ret <- plogis(pred0) - plogis(pred1)
+  }
+
+  # ret <- plogis(pred0) - plogis(pred1)
+
 
   return(ret)
 }
@@ -291,10 +322,11 @@ fitModelBasedHte <- function(
   settings$args$data <- data
 
   if (settings$type == "treatment") {
-    if (!is.null(settings$adjustmentCovariates)) {
-      covariates <- c(settings$adjustmentCovariates, "treatment")
-      modelFormula <- paste(covariates, collapse = "+")
-    }
+    modelFormula <- "offset(riskLinearPredictor) + treatment - 1"
+    # if (!is.null(settings$adjustmentCovariates)) {
+    #   covariates <- c(settings$adjustmentCovariates, "treatment")
+    #   modelFormula <- paste(covariates, collapse = "+")
+    # }
   } else if (settings$type == "risk") {
     modelFormula <- paste(
       c(
@@ -361,4 +393,82 @@ predictBenefitModelBasedHte <- function(
   }
 
   return(benefit)
+}
+
+
+
+#' Fit adaptive approach
+#'
+#' @description
+#' Fits an adaptive approach for assessing treatment effect heterogeneity
+#'
+#' @param data        The data on which the adaptive approach will be applied.
+#'                    Requires a column called `riskLinearPredictor` with the
+#'                    linear predictors of the existing prediction model
+#' @param settings    A list of settings for making smooth benefit predictions
+#'
+#' @export
+fitAdaptive <- function(
+  data,
+  settings
+) {
+
+  selectedAic   <- Inf
+  selectedModel <- NULL
+
+  for (i in seq_along(settings)) {
+
+    tmpType <- class(settings[[i]])[2]
+
+    if (tmpType == "modelBased") {
+      tmpModel <- fitModelBasedHte(
+        data     = data,
+        settings = settings[[i]]
+      )
+    } else if (tmpType == "rcs") {
+      tmpModel <- fitRcsHte(
+        data     = data,
+        settings = settings[[i]]
+      )
+    }
+
+    if (selectedAic > tmpModel$aic) {
+      selectedModel <- tmpModel
+      selectedAic   <- tmpModel$aic
+    }
+  }
+
+  return(selectedModel)
+}
+
+
+#' Predict LOESS benefit
+#'
+#' @description
+#' Predicts absolute benefit based on two loess fits, one in each treatment arm
+#'
+#' @param p   The baseline risk probability
+#' @param s0  The fit in the untreated arm
+#' @param s1  The fit in the treated arm
+#'
+#' @export
+predictBenefitLoess <- function(
+  p,
+  s0,
+  s1
+) {
+
+  x <- log(p / (1 - p))
+
+  pred0 <- predict(
+      s0,
+      newdata = data.frame(riskLinearPredictor = x)
+    )
+
+  pred1 <- predict(
+      s1,
+      newdata = data.frame(riskLinearPredictor = x)
+    )
+
+  return(pred0 - pred1)
 }
