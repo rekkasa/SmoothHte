@@ -4,15 +4,16 @@
 \alias{createPairs}
 \title{Create matched pairs}
 \usage{
-createPairs(data, method = "rank")
+createPairs(data)
 }
 \arguments{
 \item{data}{A dataframe with columns \code{treatment}, \code{outcome} and
 \code{predictedBenefit}}
-
-\item{method}{The method for matching. Currently, only \code{rank} is supported}
 }
 \description{
 Creates matched pairs for the calculation of discrimination and
 calibration for benefit
+}
+\author{
+Carolien Maas
 }

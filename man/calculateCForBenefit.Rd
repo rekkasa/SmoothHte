@@ -4,12 +4,10 @@
 \alias{calculateCForBenefit}
 \title{Calculate the C-statistic for benefit}
 \usage{
-calculateCForBenefit(data, method = "rank")
+calculateCForBenefit(data)
 }
 \arguments{
 \item{data}{A dataframe with columns ...}
-
-\item{method}{Can be "rank" ....}
 }
 \description{
 Calculates the C-statistic for benefit for the evaluation of

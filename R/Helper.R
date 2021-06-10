@@ -55,54 +55,58 @@ AUC.trinary <- function(xb.hat,y){
 
 #' Create matched pairs
 #'
+#' @author Carolien Maas
+#'
 #' @description
 #'   Creates matched pairs for the calculation of discrimination and
 #'   calibration for benefit
 #'
 #' @param data      A dataframe with columns `treatment`, `outcome` and
 #'                  `predictedBenefit`
-#' @param method    The method for matching. Currently, only `rank` is supported
 #' @export
+createPairs <- function(data){
 
-createPairs <- function(
-  data,
-  method = "rank"
-) {
-  if (method == "rank") {
+  tau.hat <- data$predictedBenefit
+  Y.obs <- data$outcome
+  W <- data$treatment
 
-    numberOfPairs <- min(sum(data$treatment), sum(!data$treatment))
+  ind.A <- which(W==0)              # A is control treatment
+  order.A <- order(tau.hat[ind.A])  # order predicted treatment benefit from low to high
+  ind.A <- ind.A[order.A]           # list of indices from ordered predicted treatment benefit
 
-    grouped <- data %>%
-      dplyr::group_by(treatment) %>%
-      tidyr::nest() %>%
-      dplyr::mutate(
-        rankOutcomes = purrr::map(
-          .x = data,
-          .f = ~tibble(
-            outcome          = .x$outcome,
-            predictedBenefit = .x$predictedBenefit,
-            rank             = rank(.x$predictedBenefit)
-          ) %>%
-            dplyr::arrange(rank) %>%
-            dplyr::slice(1:numberOfPairs)
-        )
-      ) %>%
-      tidyr::unnest(rankOutcomes) %>%
-      dplyr::select(-data) %>%
-      dplyr::ungroup()
+  ind.B <- which(W==1)              # B is active treatment
+  order.B <- order(tau.hat[ind.B])
+  ind.B <- ind.B[order.B]
 
-    pairOutcome <- grouped %>% dplyr::filter(treatment == 0) %>% dplyr::pull(outcome) -
-      grouped %>% dplyr::filter(treatment == 1) %>% dplyr::pull(outcome)
-    pairPrediction <- grouped %>% dplyr::filter(treatment == 0) %>% dplyr::pull(predictedBenefit) / 2 +
-      grouped %>% dplyr::filter(treatment == 1) %>% dplyr::pull(predictedBenefit) / 2
-
+  ##### make vectors of equal length by randomly deleting some observations
+  n.A <- length(ind.A)
+  n.B <- length(ind.B)
+  n.pairs <- min(n.A, n.B)
+  if (n.A != n.B & n.pairs == n.A){
+    # delete some observations randomly from B
+    deleted.samples <- sample(order.B, n.B-n.pairs)
+    ind.B <- ind.B[-deleted.samples]
+  }
+  else if (n.A != n.B & n.pairs == n.B){
+    # delete some observations randomly from A
+    deleted.samples <- sample(order.A, n.A-n.pairs)
+    ind.A <- ind.A[-deleted.samples]
   }
 
+  # Calculation of predicted treatment benefit in matched pairs
+  tau.hat.A <- tau.hat[ind.A]
+  tau.hat.B <- tau.hat[ind.B]
+  tau.hat.avg <- (tau.hat.A+tau.hat.B)/2
+
+  # Calculation of observed treatment benefit in matched pairs
+  Y.obs.A <- Y.obs[ind.A]
+  Y.obs.B <- Y.obs[ind.B]
+  tau.obs <- Y.obs.A-Y.obs.B
+
   return(
-    dplyr::tibble(
-      pairOutcome   = pairOutcome,
-      pairPrediction = pairPrediction
+    tibble(
+      pairOutcome = tau.obs,
+      pairPrediction = tau.hat.avg
     )
   )
-
 }

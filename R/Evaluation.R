@@ -4,17 +4,14 @@
 #' discrimination
 #'
 #' @param data        A dataframe with columns ...
-#' @param method      Can be "rank" ....
 #' @export
 
 calculateCForBenefit <- function(
-  data,
-  method = "rank"
+  data
 ) {
 
-  pairs <- createPairs(
-    data   = data,
-    method = method
+  pairs <- createPairs2(
+    data   = data
   )
 
   res <- AUC.trinary(
@@ -39,18 +36,15 @@ calculateCForBenefit <- function(
 #'
 #' @param data      A dataframe with columns `treatment`, `outcome` and
 #'                  `predictedBenefit`
-#' @param method    The method for matching. Currently, only `rank` is supported
 #'
 #' @export
 
 calculateCalibrationForBenefit <- function(
-  data,
-  method = "rank"
+  data
 ) {
 
-  pairs <- createPairs(
-    data   = data,
-    method = method
+  pairs <- createPairs2(
+    data   = data
   )
 
   loessCalibrate <- stats::loess(

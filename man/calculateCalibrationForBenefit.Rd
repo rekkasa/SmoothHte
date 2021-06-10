@@ -4,13 +4,11 @@
 \alias{calculateCalibrationForBenefit}
 \title{Calculate the calibration for benefit}
 \usage{
-calculateCalibrationForBenefit(data, method = "rank")
+calculateCalibrationForBenefit(data)
 }
 \arguments{
 \item{data}{A dataframe with columns \code{treatment}, \code{outcome} and
 \code{predictedBenefit}}
-
-\item{method}{The method for matching. Currently, only \code{rank} is supported}
 }
 \description{
 Calculates the ICI, E50 and E90 for benefit, using matched
