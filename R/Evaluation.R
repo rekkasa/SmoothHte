@@ -10,7 +10,7 @@ calculateCForBenefit <- function(
   data
 ) {
 
-  pairs <- createPairs2(
+  pairs <- createPairs(
     data   = data
   )
 
@@ -43,7 +43,7 @@ calculateCalibrationForBenefit <- function(
   data
 ) {
 
-  pairs <- createPairs2(
+  pairs <- createPairs(
     data   = data
   )
 
