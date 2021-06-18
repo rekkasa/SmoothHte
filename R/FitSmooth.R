@@ -66,7 +66,6 @@ fitRcsHte <- function(
   if (settings$nKnots == 3) {
     smoothFit <- rms::lrm(
       formula = outcome ~ treatment +
-        rms::rcs(riskLinearPredictor, 3) +
         treatment * rms::rcs(riskLinearPredictor, 3),
       data              = data,
       method            = settings$method,
@@ -84,7 +83,6 @@ fitRcsHte <- function(
   } else if (settings$nKnots == 4) {
     smoothFit <- rms::lrm(
       formula = outcome ~ treatment +
-        rms::rcs(riskLinearPredictor, 4) +
         treatment * rms::rcs(riskLinearPredictor, 4),
       data              = data,
       method            = settings$method,
@@ -102,7 +100,6 @@ fitRcsHte <- function(
   } else if (settings$nKnots == 5) {
     smoothFit <- rms::lrm(
       formula = outcome ~ treatment +
-        rms::rcs(riskLinearPredictor, 5) +
         treatment * rms::rcs(riskLinearPredictor, 5),
       data              = data,
       method            = settings$method,
