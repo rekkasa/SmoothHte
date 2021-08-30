@@ -123,6 +123,7 @@ fitRcsHte <- function(
   smoothFit$aic <- aic[2]
 
   attr(smoothFit, "smoothClass") <- "rcs"
+  attr(smoothFit, "type") <- paste("RCS with", settings$nKnots, "knots")
 
   return(smoothFit)
 }
