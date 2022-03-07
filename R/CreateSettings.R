@@ -65,6 +65,9 @@ createLoessSettings <- function(
 #' @param method                Name of fitting function. Only allowable choice
 #'                              at present is lrm.fit.
 #' @param model                 Causes the model frame to be returned in the fit
+#' @param weightColumn          Optional string with the name of the data column
+#'                              containing weights.
+#' @param normwt                Normalize weights? Default is FALSE.
 #'                              object
 #' @param x                     Causes the expanded design matrix (with missings
 #'                              excluded) to be returned under the name x. For
@@ -127,6 +130,8 @@ createRcsSettings <- function(
   nKnots            = 3,
   method            = "lrm.fit",
   model             = FALSE,
+  weightColumn      = NULL,
+  normwt            = FALSE,
   x                 = FALSE,
   y                 = FALSE,
   linear.predictors = TRUE,
@@ -239,12 +244,15 @@ createStratifiedSettings <- function(
 #'                                a column called "riskLinearPredictor" is
 #'                                required in the data. If "treatment" a column
 #'                                "treatment" is required in the data.
+#' @param weightColumn            Optional string with the name of the data column
+#'                                containing the weights.
 #'
 #' @export
 
 createModelBasedSettings <- function(
   model = "logistic",
-  type = "risk"
+  type = "risk",
+  weightColumn = NULL
 ) {
 
   analysis <- list()

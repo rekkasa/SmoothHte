@@ -79,7 +79,9 @@ fitRcsHte <- function(
       tol               = settings$tol,
       strata.penalty    = settings$strata.penalty,
       var.penalty       = settings$var.penalty,
-      scale             = settings$scale
+      scale             = settings$scale,
+      weights           = data[[settings$weightColumn]],
+      normwt            = settings$normwt
     )
   } else if (settings$nKnots == 4) {
     smoothFit <- rms::lrm(
@@ -97,7 +99,9 @@ fitRcsHte <- function(
       tol               = settings$tol,
       strata.penalty    = settings$strata.penalty,
       var.penalty       = settings$var.penalty,
-      scale             = settings$scale
+      scale             = settings$scale,
+      weights           = data[[settings$weightColumn]],
+      normwt            = settings$normwt
     )
   } else if (settings$nKnots == 5) {
     smoothFit <- rms::lrm(
@@ -115,7 +119,9 @@ fitRcsHte <- function(
       tol               = settings$tol,
       strata.penalty    = settings$strata.penalty,
       var.penalty       = settings$var.penalty,
-      scale             = settings$scale
+      scale             = settings$scale,
+      weights           = data[[settings$weightColumn]],
+      normwt            = settings$normwt
     )
   }
 
@@ -321,6 +327,10 @@ fitModelBasedHte <- function(
 ) {
 
   settings$args$data <- data
+
+  if (!is.null(settings$weightColumn)) {
+    settings$args$weights = data[[settings$weightColumn]]
+  }
 
   if (settings$type == "treatment") {
     modelFormula <- "offset(riskLinearPredictor) + treatment - 1"
